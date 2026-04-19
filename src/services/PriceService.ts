@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { PriceProvider } from '../providers/PriceProvider';
-
-const prisma = new PrismaClient();
+import prisma from '../client';
 
 export class PriceService {
   private provider: PriceProvider;
