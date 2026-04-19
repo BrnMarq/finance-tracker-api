@@ -15,11 +15,23 @@ export class ContextService {
         if (!media) return;
 
         let generatedContext = "";
+        let generatedItems: { name: string; quantity: number; unitPrice: number; totalPrice: number }[] = [];
+        let generatedAmount = 0;
         
         if (media.type === 'AUDIO') {
-          generatedContext = "[AI Audio Transcript]: 'I bought 0.5 BTC because the resistance level at 40k was broken.'";
+          generatedContext = "[AI Audio Transcript]: Bought 3 onions, a coffee and a cookie.";
+          generatedItems = [
+            { name: "Onion", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
+            { name: "Coffee", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
+            { name: "Cookie", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
+          ];
+          generatedAmount = 6.00;
         } else if (media.type === 'IMAGE') {
           generatedContext = "[AI Image Analysis]: Extracted text from receipt: 'Purchase confirmed. Amount: $500.00'";
+          generatedItems = [
+            { name: "Receipt Item", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
+          ];
+          generatedAmount = 500.00;
         } else {
           generatedContext = "[AI Analysis]: Processed attached file.";
         }
@@ -31,7 +43,11 @@ export class ContextService {
           where: { id: transactionId },
           data: {
             context: generatedContext,
-            status: "COMPLETED"
+            amount: generatedAmount > 0 ? generatedAmount : undefined,
+            status: "COMPLETED",
+            items: generatedItems.length > 0 ? {
+              create: generatedItems
+            } : undefined
           }
         });
 

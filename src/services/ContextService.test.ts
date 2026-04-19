@@ -44,8 +44,16 @@ describe('ContextService', () => {
     expect(prismaMock.transaction.update).toHaveBeenCalledWith({
       where: { id: transactionId },
       data: {
-        context: "[AI Audio Transcript]: 'I bought 0.5 BTC because the resistance level at 40k was broken.'",
-        status: "COMPLETED"
+        context: "[AI Audio Transcript]: Bought 3 onions, a coffee and a cookie.",
+        amount: 6,
+        status: "COMPLETED",
+        items: {
+          create: [
+            { name: "Onion", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
+            { name: "Coffee", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
+            { name: "Cookie", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
+          ]
+        }
       }
     });
   });

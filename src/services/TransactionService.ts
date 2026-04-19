@@ -30,7 +30,7 @@ export class TransactionService {
     return prisma.transaction.findMany({
       where: { accountId },
       orderBy: { date: 'desc' },
-      include: { media: true } // Include media in results
+      include: { media: true, items: true } // Include media and items in results
     });
   }
 
