@@ -1,14 +1,17 @@
 import { Request, Response } from 'express';
 import { TransactionService } from '../services/TransactionService';
+import { ContextService } from '../services/ContextService';
 
 const transactionService = new TransactionService();
+const contextService = new ContextService();
 
 export class TransactionController {
   async create(req: Request, res: Response) {
     try {
-      const { accountId, symbol, amount, price, type, context } = req.body;
+      // context is now optional in body
+      const { accountId, symbol, amount, price, type, context, source } = req.body;
       const transaction = await transactionService.createTransaction({
-        accountId, symbol, amount, price, type, context
+        accountId, symbol, amount, price, type, context, source
       });
       res.status(201).json(transaction);
     } catch (error: any) {
@@ -21,6 +24,36 @@ export class TransactionController {
       const accountId = parseInt(req.params.id as string);
       const transactions = await transactionService.getAccountTransactions(accountId);
       res.json(transactions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async addContextMedia(req: Request, res: Response) {
+    try {
+      const transactionId = parseInt(req.params.id as string);
+      const file = req.file;
+
+      if (!file) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
+
+      // Determine type (simple logic for now)
+      const type = file.mimetype.startsWith('audio/') ? 'AUDIO' : 'IMAGE';
+      
+      // Save Media Record
+      const media = await transactionService.addMedia(transactionId, file.path, type);
+
+      // Trigger Async Processing (Mock AI)
+      contextService.processMedia(media.id, transactionId);
+
+      res.status(201).json({
+        message: 'Media uploaded successfully. Context processing started.',
+        mediaId: media.id,
+        status: 'PROCESSING_PENDING'
+      });
+
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

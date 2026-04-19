@@ -8,7 +8,8 @@ interface CreateTransactionDTO {
   amount: number;
   price: number;
   type: string;
-  context: string;
+  context?: string; // Made Optional
+  source?: string;  // Optional (Default MANUAL)
 }
 
 export class TransactionService {
@@ -20,7 +21,9 @@ export class TransactionService {
         amount: data.amount,
         price: data.price,
         type: data.type,
-        context: data.context
+        context: data.context || null,
+        status: data.context ? "COMPLETED" : "PENDING_CONTEXT",
+        source: data.source || "MANUAL"
       }
     });
   }
@@ -28,7 +31,19 @@ export class TransactionService {
   async getAccountTransactions(accountId: number) {
     return prisma.transaction.findMany({
       where: { accountId },
-      orderBy: { date: 'desc' }
+      orderBy: { date: 'desc' },
+      include: { media: true } // Include media in results
+    });
+  }
+
+  // New method to handle media attachment
+  async addMedia(transactionId: number, fileUrl: string, fileType: string) {
+    return prisma.transactionMedia.create({
+      data: {
+        transactionId,
+        url: fileUrl,
+        type: fileType
+      }
     });
   }
 }
