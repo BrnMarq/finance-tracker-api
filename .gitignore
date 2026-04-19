@@ -35,3 +35,11 @@ lib-cov
 # Operating System files
 .DS_Store
 Thumbs.db
+
+# User Uploads
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.mp3
+*.wav
