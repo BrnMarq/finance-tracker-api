@@ -2,6 +2,21 @@ import request from 'supertest';
 import app from '../app';
 import { prismaMock } from '../singleton';
 
+// Mock axios so we don't make real network requests in tests
+jest.mock('axios', () => {
+  return {
+    get: jest.fn().mockImplementation((url: string) => {
+      if (url.includes('coingecko')) {
+        return Promise.resolve({ data: { bitcoin: { usd: 43000 } } });
+      }
+      if (url.includes('binance')) {
+        return Promise.resolve({ data: { price: "43005.50" } });
+      }
+      return Promise.resolve({ data: {} });
+    })
+  };
+});
+
 describe('PriceController', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -22,7 +37,7 @@ describe('PriceController', () => {
     expect(response.body[0].price).toBe(40000);
   });
 
-  it('POST /api/prices/:symbol/fetch should fetch and store current price', async () => {
+  it('POST /api/prices/:symbol/fetch should fetch and store current price with default provider', async () => {
     const mockPriceRecord = {
       id: 3,
       symbol: 'BTC-USD',
@@ -38,5 +53,23 @@ describe('PriceController', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.price).toBe(42000.50);
+  });
+
+  it('POST /api/prices/:symbol/fetch should fetch from specified provider', async () => {
+    const mockPriceRecord = {
+      id: 4,
+      symbol: 'BTC-USD',
+      provider: 'CoinGecko',
+      price: 43000,
+      date: new Date()
+    };
+
+    prismaMock.dailyPrice.upsert.mockResolvedValue(mockPriceRecord);
+
+    const response = await request(app).post('/api/prices/BTC-USD/fetch?provider=CoinGecko');
+
+    expect(response.status).toBe(200);
+    expect(response.body.price).toBe(43000);
+    expect(response.body.provider).toBe('CoinGecko');
   });
 });
