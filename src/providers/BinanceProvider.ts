@@ -63,9 +63,9 @@ export class BinanceProvider implements PriceProvider {
       if (
         response.data &&
         response.data.data &&
-        response.data.data.length > 0
+        response.data.data.length > 1
       ) {
-        const priceString = response.data.data[0].adv.price;
+        const priceString = response.data.data[1].adv.price;
         const price = parseFloat(priceString);
         if (isNaN(price)) {
           throw new Error(
