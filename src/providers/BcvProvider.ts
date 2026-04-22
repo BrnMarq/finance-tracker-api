@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import * as https from 'https';
 import { PriceProvider } from './PriceProvider';
 
 export class BcvProvider implements PriceProvider {
@@ -17,7 +18,10 @@ export class BcvProvider implements PriceProvider {
       // By default, websites might block requests missing User-Agent
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
+      },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+      })
     });
 
     const html = response.data;
