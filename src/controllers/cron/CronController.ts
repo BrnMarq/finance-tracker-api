@@ -3,15 +3,20 @@ import { PriceService } from '../../services/PriceService';
 import { MockProvider } from '../../providers/MockProvider';
 import { CoinGeckoProvider } from '../../providers/CoinGeckoProvider';
 import { BinanceProvider } from '../../providers/BinanceProvider';
+import { BcvProvider } from '../../providers/BcvProvider';
 
 const priceService = new PriceService([
   new MockProvider(),
   new CoinGeckoProvider(),
-  new BinanceProvider()
+  new BinanceProvider(),
+  new BcvProvider()
 ]);
 
-const TRACKED_SYMBOLS = ['BTC-USD', 'ETH-USD'];
-const PROVIDERS_TO_USE = ['CoinGecko', 'Binance'];
+const TRACKED_ASSETS = [
+  { symbol: 'BTC-USD', providers: ['CoinGecko', 'Binance'] },
+  { symbol: 'ETH-USD', providers: ['CoinGecko', 'Binance'] },
+  { symbol: 'VES-USD', providers: ['BCV'] }
+];
 
 export class CronController {
   async triggerDailyPrices(req: Request, res: Response) {
@@ -26,15 +31,15 @@ export class CronController {
     console.log('[Cron] Starting Daily Price Job triggered by Vercel...');
     const results: any[] = [];
 
-    for (const symbol of TRACKED_SYMBOLS) {
-      for (const provider of PROVIDERS_TO_USE) {
+    for (const asset of TRACKED_ASSETS) {
+      for (const provider of asset.providers) {
         try {
-          const result = await priceService.fetchAndStorePrice(symbol, provider);
-          console.log(`[Cron] Stored price for ${symbol} from ${provider}`);
-          results.push({ symbol, provider, status: 'success', data: result });
+          const result = await priceService.fetchAndStorePrice(asset.symbol, provider);
+          console.log(`[Cron] Stored price for ${asset.symbol} from ${provider}`);
+          results.push({ symbol: asset.symbol, provider, status: 'success', data: result });
         } catch (error: any) {
-          console.error(`[Cron] Failed to store price for ${symbol} from ${provider}`, error);
-          results.push({ symbol, provider, status: 'error', message: error.message });
+          console.error(`[Cron] Failed to store price for ${asset.symbol} from ${provider}`, error);
+          results.push({ symbol: asset.symbol, provider, status: 'error', message: error.message });
         }
       }
     }

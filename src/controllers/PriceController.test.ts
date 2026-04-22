@@ -12,6 +12,9 @@ jest.mock('axios', () => {
       if (url.includes('binance')) {
         return Promise.resolve({ data: { price: "43005.50" } });
       }
+      if (url.includes('bcv.org.ve')) {
+        return Promise.resolve({ data: '<html><body><div id="dolar"><div class="centrado"><strong> 36,25 </strong></div></div></body></html>' });
+      }
       return Promise.resolve({ data: {} });
     })
   };
@@ -71,5 +74,23 @@ describe('PriceController', () => {
     expect(response.status).toBe(200);
     expect(response.body.price).toBe(43000);
     expect(response.body.provider).toBe('CoinGecko');
+  });
+
+  it('POST /api/prices/:symbol/fetch should fetch from BCV provider', async () => {
+    const mockPriceRecord = {
+      id: 5,
+      symbol: 'VES-USD',
+      provider: 'BCV',
+      price: 36.25,
+      date: new Date()
+    };
+
+    prismaMock.dailyPrice.upsert.mockResolvedValue(mockPriceRecord);
+
+    const response = await request(app).post('/api/prices/VES-USD/fetch?provider=BCV');
+
+    expect(response.status).toBe(200);
+    expect(response.body.price).toBe(36.25);
+    expect(response.body.provider).toBe('BCV');
   });
 });

@@ -3,11 +3,13 @@ import { PriceService } from '../services/PriceService';
 import { MockProvider } from '../providers/MockProvider';
 import { CoinGeckoProvider } from '../providers/CoinGeckoProvider';
 import { BinanceProvider } from '../providers/BinanceProvider';
+import { BcvProvider } from '../providers/BcvProvider';
 
 const priceService = new PriceService([
   new MockProvider(),
   new CoinGeckoProvider(),
-  new BinanceProvider()
+  new BinanceProvider(),
+  new BcvProvider()
 ]);
 
 export class PriceController {
