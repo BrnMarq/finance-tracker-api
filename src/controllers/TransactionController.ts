@@ -46,12 +46,12 @@ export class TransactionController {
       const media = await transactionService.addMedia(transactionId, file.path, type);
 
       // Trigger Async Processing (Mock AI)
-      contextService.processMedia(media.id, transactionId);
+      await contextService.processMedia(media.id, transactionId);
 
       res.status(201).json({
-        message: 'Media uploaded successfully. Context processing started.',
+        message: 'Media uploaded successfully. Context processing started and completed.',
         mediaId: media.id,
-        status: 'PROCESSING_PENDING'
+        status: 'COMPLETED'
       });
 
     } catch (error: any) {

@@ -59,7 +59,7 @@ describe('TransactionController', () => {
       .attach('file', Buffer.from('fake image data'), 'test.jpg');
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('message', 'Media uploaded successfully. Context processing started.');
+    expect(response.body).toHaveProperty('message', 'Media uploaded successfully. Context processing started and completed.');
     expect(response.body).toHaveProperty('mediaId', 1);
   });
 });
