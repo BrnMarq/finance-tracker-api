@@ -9,11 +9,14 @@ jest.mock('axios', () => {
       if (url.includes('coingecko')) {
         return Promise.resolve({ data: { bitcoin: { usd: 43000 } } });
       }
-      if (url.includes('binance')) {
-        return Promise.resolve({ data: { price: "43005.50" } });
-      }
       if (url.includes('bcv.org.ve')) {
         return Promise.resolve({ data: '<html><body><div id="dolar"><div class="centrado"><strong> 36,25 </strong></div></div></body></html>' });
+      }
+      return Promise.resolve({ data: {} });
+    }),
+    post: jest.fn().mockImplementation((url: string) => {
+      if (url.includes('binance')) {
+        return Promise.resolve({ data: { data: [{ adv: { price: "43.50" } }] } });
       }
       return Promise.resolve({ data: {} });
     })
@@ -92,5 +95,23 @@ describe('PriceController', () => {
     expect(response.status).toBe(200);
     expect(response.body.price).toBe(36.25);
     expect(response.body.provider).toBe('BCV');
+  });
+
+  it('POST /api/prices/:symbol/fetch should fetch from Binance P2P provider', async () => {
+    const mockPriceRecord = {
+      id: 6,
+      symbol: 'USDT-VES',
+      provider: 'Binance',
+      price: 43.50,
+      date: new Date()
+    };
+
+    prismaMock.dailyPrice.upsert.mockResolvedValue(mockPriceRecord);
+
+    const response = await request(app).post('/api/prices/USDT-VES/fetch?provider=Binance');
+
+    expect(response.status).toBe(200);
+    expect(response.body.price).toBe(43.50);
+    expect(response.body.provider).toBe('Binance');
   });
 });
