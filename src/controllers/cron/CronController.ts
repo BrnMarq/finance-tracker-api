@@ -12,7 +12,7 @@ const priceService = new PriceService([
   new BcvProvider(),
 ]);
 
-const TRACKED_ASSETS = [{ symbol: "VES-USD", providers: ["BCV"] }];
+const TRACKED_ASSETS = [{ symbol: "USDT-VES", providers: ["BCV", "Binance"] }];
 
 export class CronController {
   async triggerDailyPrices(req: Request, res: Response) {
