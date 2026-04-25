@@ -1,4 +1,4 @@
-import { TransactionType } from '@prisma/client';
+import { TransactionType, TransactionFlow } from '@prisma/client';
 import prisma from '../client';
 
 export class ContextService {
@@ -70,6 +70,7 @@ export class ContextService {
     let generatedItems: { name: string; quantity: number; unitPrice: number; totalPrice: number }[] = [];
     let generatedAmount = 0;
     let inferredType: TransactionType = "WANTS";
+    let inferredFlow: TransactionFlow = "OUT";
     let inferredSymbol = defaultSymbol;
     
     if (fileType === 'AUDIO') {
@@ -101,6 +102,7 @@ export class ContextService {
         symbol: inferredSymbol,
         totalValue: generatedAmount > 0 ? generatedAmount : 0,
         type: inferredType,
+        flow: inferredFlow,
         context: generatedContext,
         status: "COMPLETED",
         source: "MANUAL",

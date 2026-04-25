@@ -1,4 +1,4 @@
-import { PrismaClient, TransactionType, TransactionSource } from '@prisma/client';
+import { PrismaClient, TransactionType, TransactionSource, TransactionFlow } from '@prisma/client';
 import prisma from '../client';
 
 interface CreateTransactionDTO {
@@ -6,6 +6,7 @@ interface CreateTransactionDTO {
   symbol: string;
   totalValue?: number; // Optional, might be updated later via context
   type: TransactionType;
+  flow?: TransactionFlow;
   context?: string;
   source?: TransactionSource;
 }
@@ -18,6 +19,7 @@ export class TransactionService {
         symbol: data.symbol,
         totalValue: data.totalValue || 0,
         type: data.type,
+        flow: data.flow || "OUT",
         context: data.context || null,
         status: data.context ? "COMPLETED" : "PENDING_CONTEXT",
         source: data.source || "MANUAL"
@@ -31,6 +33,7 @@ export class TransactionService {
       symbol: tx.symbol,
       totalValue: tx.totalValue || 0,
       type: tx.type,
+      flow: tx.flow || "OUT",
       context: tx.context || null,
       status: tx.context ? "COMPLETED" : "PENDING_CONTEXT",
       source: tx.source || "MANUAL"

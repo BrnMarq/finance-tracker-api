@@ -1,4 +1,4 @@
-import { TransactionType, TransactionSource } from '@prisma/client';
+import { TransactionType, TransactionSource, TransactionFlow } from '@prisma/client';
 import { TransactionService } from './TransactionService';
 import { prismaMock } from '../singleton';
 
@@ -15,6 +15,7 @@ describe('TransactionService', () => {
       symbol: 'BTC-USD',
       totalValue: 50000,
       type: "SAVINGS" as TransactionType,
+      flow: "OUT" as TransactionFlow,
       context: 'Bought the dip',
       source: "MANUAL" as TransactionSource
     };
@@ -29,6 +30,7 @@ describe('TransactionService', () => {
         symbol: 'BTC-USD',
         totalValue: 50000,
         type: 'SAVINGS',
+        flow: 'OUT',
         context: 'Bought the dip',
         status: 'COMPLETED',
         source: 'MANUAL'
@@ -43,6 +45,7 @@ describe('TransactionService', () => {
       symbol: 'ETH-USD',
       totalValue: 25000,
       type: "SAVINGS" as TransactionType,
+      flow: "OUT" as TransactionFlow,
       source: "BOT" as TransactionSource
     };
 
@@ -56,6 +59,7 @@ describe('TransactionService', () => {
         symbol: 'ETH-USD',
         totalValue: 25000,
         type: 'SAVINGS',
+        flow: 'OUT',
         context: null,
         status: 'PENDING_CONTEXT',
         source: 'BOT'

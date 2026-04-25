@@ -25,6 +25,11 @@ enum TransactionSource {
   BOT
 }
 
+enum TransactionFlow {
+  IN
+  OUT
+}
+
 model Transaction {
   id          Int      @id @default(autoincrement())
   accountId   Int
@@ -32,6 +37,7 @@ model Transaction {
   symbol      String   // E.g., USD
   totalValue  Float    @default(0) // Total fiat impact
   type        TransactionType
+  flow        TransactionFlow @default(OUT)
   date        DateTime @default(now())
   
   // Updated Context Fields

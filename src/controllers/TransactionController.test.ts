@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../app';
 import { prismaMock } from '../singleton';
 
-import { TransactionType, TransactionSource } from '@prisma/client';
+import { TransactionType, TransactionSource, TransactionFlow } from '@prisma/client';
 
 // We need to mock the ContextService as it uses setTimeout and is async
 jest.mock('../services/ContextService', () => {
@@ -16,6 +16,7 @@ jest.mock('../services/ContextService', () => {
           symbol: "USD",
           totalValue: 500,
           type: "NEEDS",
+          flow: "OUT",
           context: "Mock Context",
           status: "COMPLETED",
           source: "MANUAL",
@@ -39,6 +40,7 @@ describe('TransactionController', () => {
       symbol: 'BTC-USD',
       totalValue: 50000,
       type: "SAVINGS" as TransactionType,
+      flow: "OUT" as TransactionFlow,
       context: null,
       status: 'PENDING_CONTEXT',
       source: "BOT" as TransactionSource,
@@ -57,8 +59,8 @@ describe('TransactionController', () => {
 
   it('POST /api/transactions/bulk should create multiple transactions', async () => {
     const mockTxs = [
-      { accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'SAVINGS', source: 'BOT' },
-      { accountId: 1, symbol: 'ETH-USD', totalValue: 2500, type: 'SAVINGS', source: 'BOT' }
+      { accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'SAVINGS', flow: 'OUT', source: 'BOT' },
+      { accountId: 1, symbol: 'ETH-USD', totalValue: 2500, type: 'SAVINGS', flow: 'OUT', source: 'BOT' }
     ];
 
     prismaMock.transaction.createMany.mockResolvedValue({ count: 2 });

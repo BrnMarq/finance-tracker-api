@@ -8,9 +8,9 @@ const contextService = new ContextService();
 export class TransactionController {
   async create(req: Request, res: Response) {
     try {
-      const { accountId, symbol, totalValue, type, context, source } = req.body;
+      const { accountId, symbol, totalValue, type, flow, context, source } = req.body;
       const transaction = await transactionService.createTransaction({
-        accountId, symbol, totalValue, type, context, source
+        accountId, symbol, totalValue, type, flow, context, source
       });
       res.status(201).json(transaction);
     } catch (error: any) {
