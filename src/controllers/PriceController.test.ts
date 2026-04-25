@@ -16,7 +16,14 @@ jest.mock('axios', () => {
     }),
     post: jest.fn().mockImplementation((url: string) => {
       if (url.includes('binance')) {
-        return Promise.resolve({ data: { data: [{ adv: { price: "43.50" } }] } });
+        return Promise.resolve({ 
+          data: { 
+            data: [
+              { adv: { price: "45.00" } }, // Index 0 (Promoted Ad)
+              { adv: { price: "43.50" } }  // Index 1 (Organic Ad)
+            ] 
+          } 
+        });
       }
       return Promise.resolve({ data: {} });
     })
