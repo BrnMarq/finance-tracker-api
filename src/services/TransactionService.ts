@@ -3,11 +3,10 @@ import prisma from '../client';
 interface CreateTransactionDTO {
   accountId: number;
   symbol: string;
-  amount: number;
-  price: number;
+  totalValue?: number; // Optional, might be updated later via context
   type: string;
-  context?: string; // Made Optional
-  source?: string;  // Optional (Default MANUAL)
+  context?: string;
+  source?: string;
 }
 
 export class TransactionService {
@@ -16,8 +15,7 @@ export class TransactionService {
       data: {
         accountId: data.accountId,
         symbol: data.symbol,
-        amount: data.amount,
-        price: data.price,
+        totalValue: data.totalValue || 0,
         type: data.type,
         context: data.context || null,
         status: data.context ? "COMPLETED" : "PENDING_CONTEXT",

@@ -12,8 +12,7 @@ describe('TransactionService', () => {
     const newTxData = {
       accountId: 1,
       symbol: 'BTC-USD',
-      amount: 1,
-      price: 50000,
+      totalValue: 50000,
       type: 'BUY',
       context: 'Bought the dip',
       source: 'MANUAL'
@@ -27,8 +26,7 @@ describe('TransactionService', () => {
       data: {
         accountId: 1,
         symbol: 'BTC-USD',
-        amount: 1,
-        price: 50000,
+        totalValue: 50000,
         type: 'BUY',
         context: 'Bought the dip',
         status: 'COMPLETED',
@@ -42,8 +40,7 @@ describe('TransactionService', () => {
     const newTxData = {
       accountId: 1,
       symbol: 'ETH-USD',
-      amount: 10,
-      price: 2500,
+      totalValue: 25000,
       type: 'BUY',
       source: 'BOT'
     };
@@ -56,8 +53,7 @@ describe('TransactionService', () => {
       data: {
         accountId: 1,
         symbol: 'ETH-USD',
-        amount: 10,
-        price: 2500,
+        totalValue: 25000,
         type: 'BUY',
         context: null,
         status: 'PENDING_CONTEXT',

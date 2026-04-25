@@ -82,7 +82,7 @@ describe('PriceController', () => {
   it('POST /api/prices/:symbol/fetch should fetch from BCV provider', async () => {
     const mockPriceRecord = {
       id: 5,
-      symbol: 'VES-USD',
+      symbol: 'USDT-VES',
       provider: 'BCV',
       price: 36.25,
       date: new Date()
@@ -90,7 +90,7 @@ describe('PriceController', () => {
 
     prismaMock.dailyPrice.upsert.mockResolvedValue(mockPriceRecord);
 
-    const response = await request(app).post('/api/prices/VES-USD/fetch?provider=BCV');
+    const response = await request(app).post('/api/prices/USDT-VES/fetch?provider=BCV');
 
     expect(response.status).toBe(200);
     expect(response.body.price).toBe(36.25);

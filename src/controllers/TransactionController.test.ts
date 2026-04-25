@@ -23,8 +23,7 @@ describe('TransactionController', () => {
       id: 1,
       accountId: 1,
       symbol: 'BTC-USD',
-      amount: 1,
-      price: 50000,
+      totalValue: 50000,
       type: 'BUY',
       context: null,
       status: 'PENDING_CONTEXT',
@@ -36,7 +35,7 @@ describe('TransactionController', () => {
 
     const response = await request(app)
       .post('/api/transactions')
-      .send({ accountId: 1, symbol: 'BTC-USD', amount: 1, price: 50000, type: 'BUY', source: 'BOT' });
+      .send({ accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'BUY', source: 'BOT' });
 
     expect(response.status).toBe(201);
     expect(response.body.status).toBe('PENDING_CONTEXT');

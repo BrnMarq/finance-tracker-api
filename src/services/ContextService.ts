@@ -44,7 +44,7 @@ export class ContextService {
         where: { id: transactionId },
         data: {
           context: generatedContext,
-          amount: generatedAmount > 0 ? generatedAmount : undefined,
+          totalValue: generatedAmount > 0 ? generatedAmount : undefined,
           status: "COMPLETED",
           items: generatedItems.length > 0 ? {
             create: generatedItems

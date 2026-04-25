@@ -45,7 +45,7 @@ describe('ContextService', () => {
       where: { id: transactionId },
       data: {
         context: "[AI Audio Transcript]: Bought 3 onions, a coffee and a cookie.",
-        amount: 6,
+        totalValue: 6,
         status: "COMPLETED",
         items: {
           create: [
