@@ -1,12 +1,13 @@
+import { PrismaClient, TransactionType, TransactionSource } from '@prisma/client';
 import prisma from '../client';
 
 interface CreateTransactionDTO {
   accountId: number;
   symbol: string;
   totalValue?: number; // Optional, might be updated later via context
-  type: string;
+  type: TransactionType;
   context?: string;
-  source?: string;
+  source?: TransactionSource;
 }
 
 export class TransactionService {

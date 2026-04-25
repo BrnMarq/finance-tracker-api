@@ -14,19 +14,30 @@ model Account {
   createdAt    DateTime      @default(now())
 }
 
+enum TransactionType {
+  NEEDS
+  WANTS
+  SAVINGS
+}
+
+enum TransactionSource {
+  MANUAL
+  BOT
+}
+
 model Transaction {
   id          Int      @id @default(autoincrement())
   accountId   Int
   account     Account  @relation(fields: [accountId], references: [id])
   symbol      String   // E.g., USD
   totalValue  Float    @default(0) // Total fiat impact
-  type        String
+  type        TransactionType
   date        DateTime @default(now())
   
   // Updated Context Fields
   context     String?
   status      String   @default("PENDING_CONTEXT")
-  source      String   @default("MANUAL")
+  source      TransactionSource @default(MANUAL)
   
   media       TransactionMedia[]
   items       TransactionItem[]

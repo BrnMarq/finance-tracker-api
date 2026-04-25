@@ -1,3 +1,4 @@
+import { TransactionType, TransactionSource } from '@prisma/client';
 import { TransactionService } from './TransactionService';
 import { prismaMock } from '../singleton';
 
@@ -13,9 +14,9 @@ describe('TransactionService', () => {
       accountId: 1,
       symbol: 'BTC-USD',
       totalValue: 50000,
-      type: 'BUY',
+      type: "SAVINGS" as TransactionType,
       context: 'Bought the dip',
-      source: 'MANUAL'
+      source: "MANUAL" as TransactionSource
     };
 
     prismaMock.transaction.create.mockResolvedValue({ id: 1, ...newTxData, status: 'COMPLETED', date: new Date() } as any);
@@ -27,7 +28,7 @@ describe('TransactionService', () => {
         accountId: 1,
         symbol: 'BTC-USD',
         totalValue: 50000,
-        type: 'BUY',
+        type: 'SAVINGS',
         context: 'Bought the dip',
         status: 'COMPLETED',
         source: 'MANUAL'
@@ -41,8 +42,8 @@ describe('TransactionService', () => {
       accountId: 1,
       symbol: 'ETH-USD',
       totalValue: 25000,
-      type: 'BUY',
-      source: 'BOT'
+      type: "SAVINGS" as TransactionType,
+      source: "BOT" as TransactionSource
     };
 
     prismaMock.transaction.create.mockResolvedValue({ id: 2, ...newTxData, context: null, status: 'PENDING_CONTEXT', date: new Date() } as any);
@@ -54,7 +55,7 @@ describe('TransactionService', () => {
         accountId: 1,
         symbol: 'ETH-USD',
         totalValue: 25000,
-        type: 'BUY',
+        type: 'SAVINGS',
         context: null,
         status: 'PENDING_CONTEXT',
         source: 'BOT'

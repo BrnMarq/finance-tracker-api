@@ -1,3 +1,4 @@
+import { TransactionType } from '@prisma/client';
 import prisma from '../client';
 
 export class ContextService {
@@ -68,7 +69,7 @@ export class ContextService {
     let generatedContext = "";
     let generatedItems: { name: string; quantity: number; unitPrice: number; totalPrice: number }[] = [];
     let generatedAmount = 0;
-    let inferredType = "EXPENSE";
+    let inferredType: TransactionType = "WANTS";
     let inferredSymbol = defaultSymbol;
     
     if (fileType === 'AUDIO') {
@@ -79,14 +80,14 @@ export class ContextService {
         { name: "Cookie", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
       ];
       generatedAmount = 6.00;
-      inferredType = "EXPENSE";
+      inferredType = "NEEDS";
     } else if (fileType === 'IMAGE') {
       generatedContext = "[AI Image Analysis]: Extracted text from receipt: 'Purchase confirmed. Amount: $500.00'";
       generatedItems = [
         { name: "Receipt Item", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
       ];
       generatedAmount = 500.00;
-      inferredType = "EXPENSE";
+      inferredType = "WANTS";
     } else {
       generatedContext = "[AI Analysis]: Processed attached file.";
     }
