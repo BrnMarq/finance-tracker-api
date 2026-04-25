@@ -41,6 +41,23 @@ describe('TransactionController', () => {
     expect(response.body.status).toBe('PENDING_CONTEXT');
   });
 
+  it('POST /api/transactions/bulk should create multiple transactions', async () => {
+    const mockTxs = [
+      { accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'BUY', source: 'BOT' },
+      { accountId: 1, symbol: 'ETH-USD', totalValue: 2500, type: 'BUY', source: 'BOT' }
+    ];
+
+    prismaMock.transaction.createMany.mockResolvedValue({ count: 2 });
+
+    const response = await request(app)
+      .post('/api/transactions/bulk')
+      .send(mockTxs);
+
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('Transactions successfully imported.');
+    expect(response.body.count).toBe(2);
+  });
+
   it('POST /api/transactions/:id/context should accept media upload', async () => {
     const mockMedia = {
       id: 1,

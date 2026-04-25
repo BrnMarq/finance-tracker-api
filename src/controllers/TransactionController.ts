@@ -18,6 +18,24 @@ export class TransactionController {
     }
   }
 
+  async createBulk(req: Request, res: Response) {
+    try {
+      const transactions = req.body;
+      if (!Array.isArray(transactions)) {
+        res.status(400).json({ error: 'Expected an array of transactions' });
+        return;
+      }
+      
+      const result = await transactionService.createBulkTransactions(transactions);
+      res.status(201).json({
+        message: 'Transactions successfully imported.',
+        count: result.count
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async getByAccount(req: Request, res: Response) {
     try {
       const accountId = parseInt(req.params.id as string);

@@ -24,6 +24,22 @@ export class TransactionService {
     });
   }
 
+  async createBulkTransactions(data: CreateTransactionDTO[]) {
+    const transactions = data.map(tx => ({
+      accountId: tx.accountId,
+      symbol: tx.symbol,
+      totalValue: tx.totalValue || 0,
+      type: tx.type,
+      context: tx.context || null,
+      status: tx.context ? "COMPLETED" : "PENDING_CONTEXT",
+      source: tx.source || "MANUAL"
+    }));
+
+    return prisma.transaction.createMany({
+      data: transactions
+    });
+  }
+
   async getAccountTransactions(accountId: number) {
     return prisma.transaction.findMany({
       where: { accountId },

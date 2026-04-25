@@ -6,6 +6,7 @@ const router = Router();
 const controller = new TransactionController();
 
 router.post("/", controller.create);
+router.post("/bulk", controller.createBulk);
 router.get("/account/:id", controller.getByAccount);
 
 // New endpoint for media context
