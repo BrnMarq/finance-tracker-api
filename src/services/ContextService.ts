@@ -1,54 +1,119 @@
 import { TransactionType, TransactionFlow } from '@prisma/client';
 import prisma from '../client';
+import { GoogleGenAI } from '@google/genai';
+import * as fs from 'fs';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const SYSTEM_PROMPT = `
+Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 
+1. Identifica todos los artículos comprados, su cantidad y precio unitario.
+2. Calcula el valor total (totalValue).
+3. Clasifica la transacción (type) estrictamente como 'NEEDS' (necesidades básicas como mercado, renta), 'WANTS' (deseos como café, salidas), o 'SAVINGS' (ahorros o inversiones).
+4. Define el flujo (flow) como 'OUT' (gasto) o 'IN' (ingreso).
+5. IMPORTANTE: Traduce todos los nombres de los artículos y el resumen (context) al ESPAÑOL, sin importar el idioma original del archivo.
+
+Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura y sin markdown de código:
+{
+  "context": "Resumen breve",
+  "totalValue": 10.5,
+  "type": "NEEDS",
+  "flow": "OUT",
+  "items": [
+    { "name": "Cebolla", "quantity": 3, "unitPrice": 0.5, "totalPrice": 1.5 }
+  ]
+}
+`;
 
 export class ContextService {
-  /**
-   * Mock AI processing.
-   * Simulates a delay and then generates text context based on the media type.
-   */
-  async processMedia(mediaId: number, transactionId: number) {
-    console.log(`[ContextService] Starting processing for Media #${mediaId}...`);
+  private async processWithGemini(fileUrl: string, fileType: string) {
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("[ContextService] GEMINI_API_KEY missing. Returning mock data.");
+      return this.getMockData(fileType);
+    }
 
-    // Simulate AI Latency synchronously for Vercel
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      let mimeType = fileType === 'AUDIO' ? 'audio/mpeg' : 'image/jpeg';
+      const fileBase64 = fs.readFileSync(fileUrl).toString('base64');
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: SYSTEM_PROMPT },
+              {
+                inlineData: {
+                  mimeType,
+                  data: fileBase64
+                }
+              }
+            ]
+          }
+        ]
+      });
+
+      const rawText = response.text || "{}";
+      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleanJson);
+    } catch (error) {
+      console.error("[ContextService] Error calling Gemini API:", error);
+      throw new Error("Failed to process media with AI.");
+    } finally {
+      // Clean up the file to prevent storage bloat
+      if (fs.existsSync(fileUrl)) {
+        fs.unlinkSync(fileUrl);
+      }
+    }
+  }
+
+  private getMockData(fileType: string) {
+    if (fileType === 'AUDIO') {
+      return {
+        context: "[AI Audio Transcript]: Compré 3 cebollas, un café y una galleta.",
+        items: [
+          { name: "Cebolla", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
+          { name: "Café", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
+          { name: "Galleta", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
+        ],
+        totalValue: 6.00,
+        type: "NEEDS",
+        flow: "OUT"
+      };
+    }
+    
+    return {
+      context: "[AI Image Analysis]: Extracto de recibo: 'Compra confirmada. Monto: $500.00'",
+      items: [
+        { name: "Artículo de recibo", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
+      ],
+      totalValue: 500.00,
+      type: "WANTS",
+      flow: "OUT"
+    };
+  }
+
+  async processMedia(mediaId: number, transactionId: number) {
+    console.log(`[ContextService] Starting AI processing for Media #${mediaId}...`);
 
     try {
       const media = await prisma.transactionMedia.findUnique({ where: { id: mediaId } });
       if (!media) return;
 
-      let generatedContext = "";
-      let generatedItems: { name: string; quantity: number; unitPrice: number; totalPrice: number }[] = [];
-      let generatedAmount = 0;
-      
-      if (media.type === 'AUDIO') {
-        generatedContext = "[AI Audio Transcript]: Bought 3 onions, a coffee and a cookie.";
-        generatedItems = [
-          { name: "Onion", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
-          { name: "Coffee", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
-          { name: "Cookie", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
-        ];
-        generatedAmount = 6.00;
-      } else if (media.type === 'IMAGE') {
-        generatedContext = "[AI Image Analysis]: Extracted text from receipt: 'Purchase confirmed. Amount: $500.00'";
-        generatedItems = [
-          { name: "Receipt Item", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
-        ];
-        generatedAmount = 500.00;
-      } else {
-        generatedContext = "[AI Analysis]: Processed attached file.";
-      }
+      const aiResult = await this.processWithGemini(media.url, media.type);
 
-      console.log(`[ContextService] Context generated: "${generatedContext}"`);
+      console.log(`[ContextService] Context generated: "${aiResult.context}"`);
 
       // Update the Transaction
       await prisma.transaction.update({
         where: { id: transactionId },
         data: {
-          context: generatedContext,
-          totalValue: generatedAmount > 0 ? generatedAmount : undefined,
+          context: aiResult.context,
+          totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : undefined,
           status: "COMPLETED",
-          items: generatedItems.length > 0 ? {
-            create: generatedItems
+          items: aiResult.items && aiResult.items.length > 0 ? {
+            create: aiResult.items
           } : undefined
         }
       });
@@ -61,57 +126,29 @@ export class ContextService {
   }
 
   async createTransactionFromMedia(accountId: number, fileUrl: string, fileType: string, defaultSymbol: string = "USD") {
-    console.log(`[ContextService] Starting processing for new media...`);
+    console.log(`[ContextService] Starting AI processing for new media...`);
 
-    // Simulate AI Latency synchronously for Vercel
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const aiResult = await this.processWithGemini(fileUrl, fileType);
 
-    let generatedContext = "";
-    let generatedItems: { name: string; quantity: number; unitPrice: number; totalPrice: number }[] = [];
-    let generatedAmount = 0;
-    let inferredType: TransactionType = "WANTS";
-    let inferredFlow: TransactionFlow = "OUT";
-    let inferredSymbol = defaultSymbol;
-    
-    if (fileType === 'AUDIO') {
-      generatedContext = "[AI Audio Transcript]: Bought 3 onions, a coffee and a cookie.";
-      generatedItems = [
-        { name: "Onion", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
-        { name: "Coffee", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
-        { name: "Cookie", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
-      ];
-      generatedAmount = 6.00;
-      inferredType = "NEEDS";
-    } else if (fileType === 'IMAGE') {
-      generatedContext = "[AI Image Analysis]: Extracted text from receipt: 'Purchase confirmed. Amount: $500.00'";
-      generatedItems = [
-        { name: "Receipt Item", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
-      ];
-      generatedAmount = 500.00;
-      inferredType = "WANTS";
-    } else {
-      generatedContext = "[AI Analysis]: Processed attached file.";
-    }
-
-    console.log(`[ContextService] Context generated: "${generatedContext}"`);
+    console.log(`[ContextService] Context generated: "${aiResult.context}"`);
 
     // Create the Transaction with Media and Items all at once
     const transaction = await prisma.transaction.create({
       data: {
         accountId,
-        symbol: inferredSymbol,
-        totalValue: generatedAmount > 0 ? generatedAmount : 0,
-        type: inferredType,
-        flow: inferredFlow,
-        context: generatedContext,
+        symbol: defaultSymbol,
+        totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : 0,
+        type: aiResult.type as TransactionType || "WANTS",
+        flow: aiResult.flow as TransactionFlow || "OUT",
+        context: aiResult.context,
         status: "COMPLETED",
         source: "MANUAL",
-        items: generatedItems.length > 0 ? {
-          create: generatedItems
+        items: aiResult.items && aiResult.items.length > 0 ? {
+          create: aiResult.items
         } : undefined,
         media: {
           create: {
-            url: fileUrl,
+            url: fileUrl, // Note: the physical file is deleted, but we keep the URL record for history or future cloud upload logic
             type: fileType
           }
         }

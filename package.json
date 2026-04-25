@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^1.50.1",
     "@prisma/client": "5.22.0",
     "axios": "1.15.1",
     "cheerio": "^1.2.0",
