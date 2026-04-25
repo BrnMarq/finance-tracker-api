@@ -7,7 +7,19 @@ jest.mock('../services/ContextService', () => {
   return {
     ContextService: jest.fn().mockImplementation(() => {
       return {
-        processMedia: jest.fn().mockResolvedValue(undefined)
+        processMedia: jest.fn().mockResolvedValue(undefined),
+        createTransactionFromMedia: jest.fn().mockResolvedValue({
+          id: 2,
+          accountId: 1,
+          symbol: "USD",
+          totalValue: 500,
+          type: "EXPENSE",
+          context: "Mock Context",
+          status: "COMPLETED",
+          source: "MANUAL",
+          items: [],
+          media: []
+        })
       };
     })
   };
@@ -77,5 +89,18 @@ describe('TransactionController', () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty('message', 'Media uploaded successfully. Context processing started and completed.');
     expect(response.body).toHaveProperty('mediaId', 1);
+  });
+
+  it('POST /api/transactions/from-media should create a transaction from media upload', async () => {
+    const response = await request(app)
+      .post('/api/transactions/from-media')
+      .field('accountId', '1')
+      .field('symbol', 'USD')
+      .attach('file', Buffer.from('fake audio data'), 'test.mp3');
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('message', 'Transaction created successfully from media.');
+    expect(response.body.transaction).toHaveProperty('id', 2);
+    expect(response.body.transaction).toHaveProperty('status', 'COMPLETED');
   });
 });

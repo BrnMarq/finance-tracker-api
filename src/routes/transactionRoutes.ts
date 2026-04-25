@@ -10,6 +10,7 @@ router.post("/bulk", controller.createBulk);
 router.get("/account/:id", controller.getByAccount);
 
 // New endpoint for media context
+router.post("/from-media", upload.single('file'), controller.createFromMedia);
 router.post("/:id/context", upload.single('file'), controller.addContextMedia);
 
 export default router;

@@ -75,4 +75,34 @@ export class TransactionController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async createFromMedia(req: Request, res: Response) {
+    try {
+      const accountId = parseInt(req.body.accountId as string);
+      const symbol = req.body.symbol as string || "USD";
+      const file = req.file;
+
+      if (isNaN(accountId)) {
+        res.status(400).json({ error: 'Valid accountId is required' });
+        return;
+      }
+
+      if (!file) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
+
+      const type = file.mimetype.startsWith('audio/') ? 'AUDIO' : 'IMAGE';
+      
+      const transaction = await contextService.createTransactionFromMedia(accountId, file.path, type, symbol);
+
+      res.status(201).json({
+        message: 'Transaction created successfully from media.',
+        transaction
+      });
+
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
