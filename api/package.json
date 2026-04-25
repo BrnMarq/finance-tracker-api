@@ -5,6 +5,7 @@
   "scripts": {
     "test": "jest",
     "build": "npx prisma generate && tsc",
+    "postinstall": "npx prisma generate",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts"
   },
